@@ -78,7 +78,7 @@ public class Airlock : System {
             program.Echo("Airlock is invalid, saving empty string");
             return "";
         } else {
-            return String.Join(",","airlock",Name,vent.CustomName,innerDoor.CustomName,outerDoor.CustomName);
+            return String.Join(",","Airlock",Name,vent.CustomName,innerDoor.CustomName,outerDoor.CustomName);
         }
     }
 
