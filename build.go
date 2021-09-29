@@ -22,14 +22,23 @@ func wholefile(filename string) []byte {
 	if err != nil {
 		panic(err)
 	}
-	return data
+	//scan past required header cruft to 2nd {
+	str := string(data)
+	start := strings.Index(str, "{")
+	str = str[start+1:]
+	start = strings.Index(str, "{")
+	str = str[start+1:]
+	end := strings.LastIndex(str, "}")
+	str = str[:end]
+	end = strings.LastIndex(str, "}")
+	str = str[:end]
+	return []byte(str)
 }
 
 func main() {
 	var output []byte
 
 	output = sectionMarker("AUTO-ASSEMBLED CODE")
-
 	output = append(output, sectionMarker("BEGIN base scheduler")...)
 
 	output = append(output, wholefile("baseQueue.cs")...)
@@ -48,6 +57,7 @@ func main() {
 	dict += "};\n"
 	output = append(output, sectionMarker("AUTO-GENERATED CODE")...)
 	output = append(output, []byte(dict)...)
+	/**/
 	os.WriteFile("output.cs", output, 0666)
 	clipboard.Set(string(output))
 }

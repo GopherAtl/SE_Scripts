@@ -1,3 +1,6 @@
+namespace SEScripts {
+
+class PingerSystem {
 public class Pinger : System {
 
     public Pinger(Program program, string name)  
@@ -33,4 +36,6 @@ public static System MakePinger(Program program, string[] args) {
         return null;
     }
     return new Pinger(program, args[1]);
+}
+}
 }

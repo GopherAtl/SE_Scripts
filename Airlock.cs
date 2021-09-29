@@ -1,3 +1,6 @@
+namespace SEScripts {
+
+class AirlockSystem {
 public enum AirlockState {
     Invalid,
     Pressurized,
@@ -127,3 +130,5 @@ public static System MakeAirlock(Program program, string[] args) {
 }
 
 // add airlock Airlock_Dock Airlock_Dock_Vent Airlock_Dock_Inner_Door Airlock_Dock_Outer_Door
+}
+}

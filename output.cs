@@ -231,12 +231,11 @@ public void Main(string argument, UpdateType updateSource) {
     }
 }
 
-
-
 /************************ END base scheduler ************************/
 
 
 /*************************** BEGIN Pinger ***************************/
+
 
 public class Pinger : System {
 
@@ -274,10 +273,12 @@ public static System MakePinger(Program program, string[] args) {
     }
     return new Pinger(program, args[1]);
 }
+
 /**************************** END Pinger ****************************/
 
 
 /************************** BEGIN Airlock ***************************/
+
 
 public enum AirlockState {
     Invalid,
@@ -514,6 +515,15 @@ public class Arm : System {
         return $"Arm,{Name},{BaseHingeName},{PistonName},{EndHingeName},{ConnectorName}"; //TODO: the thing
     }
 
+    public IEnumerator<double> MoveXY(float dx, float dy) {
+        //TODO: would be pretty smexy if this were, y'know, general. Even a 
+        // little bit general. For now it is pretty explicitly coded for the
+        // initial hinge-piston-hinge arrangement I'm using at time of 
+        // coding.
+        
+        return null;
+    }
+
     public IEnumerator<double> MoveTo(float baseTarget, float pistonTarget, float endTarget) {
         if(!HasValidBlocks()) {
             program.Echo($"Arm['{Name}']:MoveTo - fail, missing some blocks");
@@ -592,6 +602,7 @@ public static System MakeArm(Program program, string[] args) {
    
     return new Arm(program, args[1],args[2],args[3],args[4],args[5]);
 }
+
 
 /***************************** END Arm ******************************/
 

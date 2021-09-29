@@ -1,4 +1,6 @@
+namespace SEScripts {
 
+class ArmSystem {
 
 public abstract class MotorControl {
     public float min, max, velocity;
@@ -104,6 +106,7 @@ public class Arm : System {
         // initial hinge-piston-hinge arrangement I'm using at time of 
         // coding.
         
+        return null;
     }
 
     public IEnumerator<double> MoveTo(float baseTarget, float pistonTarget, float endTarget) {
@@ -183,4 +186,7 @@ public static System MakeArm(Program program, string[] args) {
     }
    
     return new Arm(program, args[1],args[2],args[3],args[4],args[5]);
+}
+
+}
 }

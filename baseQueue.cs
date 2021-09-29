@@ -1,4 +1,6 @@
+namespace SEScripts {
 
+class Scheduler {
 public delegate System MakeSystem(Program program, string[] args);
 
 abstract public class System {
@@ -224,5 +226,5 @@ public void Main(string argument, UpdateType updateSource) {
         }
     }
 }
-
-
+}
+}
