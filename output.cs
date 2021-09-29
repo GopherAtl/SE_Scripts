@@ -443,8 +443,15 @@ public abstract class MotorControl {
         }
     }
 
-    public float TicksToComplete() {
+    public float TicksToExecute() {
         return 60f*(max-min)/velocity;
+    }
+
+    public float TicksToComplete() {
+        var cur=GetCurrent();
+        float dif=(velocity>0)?(max-cur):(cur-min);
+        if(Math.Abs(dif)<.001) return 0;
+        return 60f*dif/Math.Abs(velocity);
     }
 
     public void SetSpeedToCompleteIn(float ticks) {
@@ -459,6 +466,7 @@ public abstract class MotorControl {
 
     public abstract float GetCurrent();
 //    public abstract void Apply();
+//    public abstract void Stop();
 }
 
 public class HingeControl : MotorControl {
@@ -476,6 +484,12 @@ public class HingeControl : MotorControl {
             Hinge.TargetVelocityRad=velocity;
         }
     }
+    public /*override*/ void Stop() {
+        var cur=Hinge.Angle;
+        Hinge.LowerLimitRad=cur;
+        Hinge.UpperLimitRad=cur;
+        Hinge.TargetVelocityRad=0;
+    }
 }
 
 public class PistonControl : MotorControl {
@@ -492,6 +506,12 @@ public class PistonControl : MotorControl {
             Piston.MaxLimit=max;
             Piston.Velocity=velocity;
         }
+    }
+    public /*override*/ void Stop() {
+        var cur=Piston.CurrentPosition;
+        Piston.MinLimit=cur;
+        Piston.MaxLimit=cur;
+        Piston.Velocity=0;
     }
 }
 
@@ -565,8 +585,26 @@ public class Arm : System {
         BaseHinge.Apply();
         EndHinge.Apply();
         Piston.Apply();
+        
+        
+        double ticks=300;
+        double timeLimit=ticks*2;
+        while(ticks>1) {
+            yield return ticks+6;
+            timeLimit-=ticks;
+            if(timeLimit<0) {
+                Log("MoveTo timed out");
+                break;
+            }
+            ticks=Math.Max(Math.Max(BaseHinge.TicksToComplete(),EndHinge.TicksToComplete()),Piston.TicksToComplete());
+            Log($"MoveTo yielding for {ticks} more ticks");
+        } 
 
-        yield return 0.0;
+        BaseHinge.Stop();
+        EndHinge.Stop();
+        Piston.Stop();
+        Log("MoveTo stopping");
+        yield return 0;
     }
     
 
