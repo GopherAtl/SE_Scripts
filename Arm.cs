@@ -116,13 +116,15 @@ public class Arm : System {
 
         //figure out the piston extension
         var dist=Math.Sqrt(dx*dx+dy*dy);
-        if (dist<5 || dist>15) {
+        if (dist<7.5 || dist>17.5) {
             Log("MoveToXY: Distance out of bounds!");
             return null;
-        }
-
+        }        
         
-        return null;
+
+        Log($"MoveToXY: {dx},{dy} => {dist}m @ {angle} rads");
+        
+        return MoveTo((float)-angle,(float)dist-7.5f,(float)angle);
     }
 
     public IEnumerator<double> MoveTo(float baseTarget, float pistonTarget, float endTarget) {
@@ -131,8 +133,8 @@ public class Arm : System {
             yield return 0.0;
         }
         
-        BaseHinge.SetTarget(baseTarget*(float)Math.PI/180.0f,0.5f);
-        EndHinge.SetTarget(endTarget*(float)Math.PI/180.0f,0.5f);
+        BaseHinge.SetTarget(baseTarget,0.5f);
+        EndHinge.SetTarget(endTarget,0.5f);
         Piston.SetTarget(pistonTarget,0.1f);
         
         BaseHinge.SetSpeedToCompleteIn(300f);
@@ -156,7 +158,7 @@ public class Arm : System {
         }
 
         switch(args[1]) {
-            case "MoveTo":
+            case "MoveTo": {
                 if(args.Length!=5) {
                     Log($"MoveTo called with invalid args - got {args.Length-2}, expected 3");
                     return null;
@@ -164,11 +166,26 @@ public class Arm : System {
                 double[] argsDouble={0.0,0.0,0.0};
                 for (var i=0;i<3;i++) {
                     if (!Double.TryParse(args[i+2],out argsDouble[i])) {
-                        Log($"MoveTo called with invalid args - expected double");
+                        Log($"MoveTo called with invalid arg {i+1} - expected double");
                         return null;
                     }                    
                 }
-                return MoveTo((float)argsDouble[0],(float)argsDouble[1],(float)argsDouble[2]);
+                return MoveTo((float)argsDouble[0]*(float)Math.PI/180.0f,(float)argsDouble[1],(float)argsDouble[2]*(float)Math.PI/180.0f);
+            }
+            case "MoveToXY": {
+                if(args.Length!=4) {
+                    Log($"MoveToXY called with invalid args - got {args.Length-2}, expected 2");
+                    return null;                    
+                }
+                double[] argsDouble={0.0,0.0};
+                for (var i=0;i<2;i++) {
+                    if(!Double.TryParse(args[i+2],out argsDouble[i])) {
+                        Log($"MoveToXY called with invalid arg {i+1} - expected double");
+                        return null;
+                    }
+                }
+                return MoveToXY((float)argsDouble[0],(float)argsDouble[1]);                
+            }
             default:
                 Log("Wha?");
                 break;
