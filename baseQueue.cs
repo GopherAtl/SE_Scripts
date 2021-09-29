@@ -5,14 +5,20 @@ public delegate System MakeSystem(Program program, string[] args);
 
 abstract public class System {
     public string Name;
+    public string Type;
     public Program program;    
     public abstract string StorageStr();
     public abstract IEnumerator<double> HandleCommand(string[] args);
     
-    public System(Program program, string name) {
+    public System(Program program, string name, string type) {
         Name=name;
+        Type=type;
         this.program=program;
       }
+
+    protected void Log(string message) {
+        program.Echo($"{Type}['{Name}']:{message}");
+    }
 
 }
 

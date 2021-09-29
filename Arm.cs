@@ -84,7 +84,7 @@ public class Arm : System {
     IMyShipConnector Connector;
 
     public Arm(Program program, string name, string baseHingeName, string pistonName, string endHingeName, string connectorName) 
-        : base(program, name) { 
+        : base(program, name, "Arm") { 
             BaseHingeName=baseHingeName;
             PistonName=pistonName;
             EndHingeName=endHingeName;
@@ -95,23 +95,39 @@ public class Arm : System {
             GetBlocks();
         }
 
-
+    
     public override string StorageStr() {
         return $"Arm,{Name},{BaseHingeName},{PistonName},{EndHingeName},{ConnectorName}"; //TODO: the thing
     }
 
-    public IEnumerator<double> MoveXY(float dx, float dy) {
+    public IEnumerator<double> MoveToXY(float dx, float dy) {
         //TODO: would be pretty smexy if this were, y'know, general. Even a 
         // little bit general. For now it is pretty explicitly coded for the
         // initial hinge-piston-hinge arrangement I'm using at time of 
         // coding.
+        
+        //figure out the target angle for the top hinge to achieve this dx,dy
+        var angle=Math.Atan2(dy,dx);
+
+        if (angle<0 || angle>90) {
+            Log("MoveToXY: Angle out of bounds");
+            return null;
+        }
+
+        //figure out the piston extension
+        var dist=Math.Sqrt(dx*dx+dy*dy);
+        if (dist<5 || dist>15) {
+            Log("MoveToXY: Distance out of bounds!");
+            return null;
+        }
+
         
         return null;
     }
 
     public IEnumerator<double> MoveTo(float baseTarget, float pistonTarget, float endTarget) {
         if(!HasValidBlocks()) {
-            program.Echo($"Arm['{Name}']:MoveTo - fail, missing some blocks");
+            Log("MoveTo - fail, missing some blocks");
             yield return 0.0;
         }
         
@@ -135,26 +151,26 @@ public class Arm : System {
         //this check *shouldn't* be needed, we shouldn't be
         //called until these have been checked, but for sanity
         if (args[0]!=Name) { 
-            program.Echo($"Arm['{Name}']:HandleCommand called with command for {args[0]}");
+            Log($"HandleCommand called with command for {args[0]}");
             return null;
         }
 
         switch(args[1]) {
             case "MoveTo":
                 if(args.Length!=5) {
-                    program.Echo($"Arm['{Name}'].MoveTo called with invalid args - got {args.Length-2}, expected 3");
+                    Log($"MoveTo called with invalid args - got {args.Length-2}, expected 3");
                     return null;
                 }
                 double[] argsDouble={0.0,0.0,0.0};
                 for (var i=0;i<3;i++) {
                     if (!Double.TryParse(args[i+2],out argsDouble[i])) {
-                        program.Echo($"Arm['{Name}'].MoveTo called with invalid args - expected double");
+                        Log($"MoveTo called with invalid args - expected double");
                         return null;
                     }                    
                 }
                 return MoveTo((float)argsDouble[0],(float)argsDouble[1],(float)argsDouble[2]);
             default:
-                program.Echo("Wha?");
+                Log("Wha?");
                 break;
         }
 
@@ -181,7 +197,7 @@ public class Arm : System {
 
 public static System MakeArm(Program program, string[] args) {
     if(args.Length!=6) {
-        program.Echo($"Error: MakeArm given {args.Length} args!");
+        program.Echo($"MakeArm given {args.Length} args!");
         return null;
     }
    

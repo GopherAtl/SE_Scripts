@@ -4,7 +4,7 @@ class PingerSystem {
 public class Pinger : System {
 
     public Pinger(Program program, string name)  
-        : base(program, name) { }
+        : base(program, name, "Pinger") { }
 
 
     public override string StorageStr() {

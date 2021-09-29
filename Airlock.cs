@@ -14,7 +14,7 @@ public class Airlock : System {
     AirlockState state;
 
     public Airlock(Program program, string name, string ventName, string innerDoorName, string outerDoorName) 
-        : base(program, name) {
+        : base(program, name, "Airlock") {
 
         vent = program.GridTerminalSystem.GetBlockWithName(ventName) as IMyAirVent;
         innerDoor = program.GridTerminalSystem.GetBlockWithName(innerDoorName) as IMyDoor;
