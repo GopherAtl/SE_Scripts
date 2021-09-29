@@ -133,6 +133,7 @@ public class Arm : System {
             Log("MoveToXY: Angle out of bounds");
             return null;
         }
+        angle=-angle; 
 
         //figure out the piston extension
         var dist=Math.Sqrt(dx*dx+dy*dy);
@@ -144,7 +145,10 @@ public class Arm : System {
 
         Log($"MoveToXY: {dx},{dy} => {dist}m @ {angle} rads");
         
-        return MoveTo((float)-angle,(float)dist-7.5f,(float)angle);
+        //change in the base hinge angle - end hinge will move equal opposite
+        var angleD=angle-BaseHinge.GetCurrent();
+        
+        return MoveTo((float)angle,(float)dist-7.5f,(float)(EndHinge.GetCurrent()-angleD));
     }
 
     public IEnumerator<double> MoveTo(float baseTarget, float pistonTarget, float endTarget) {
