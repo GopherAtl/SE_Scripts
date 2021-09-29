@@ -17,7 +17,21 @@ public abstract class MotorControl {
                 min=targetVal;
                 max=curVal;
                 velocity=-speed;
-        }        
+        }
+    }
+
+    public float TicksToComplete() {
+        return 60f*(max-min)/velocity;
+    }
+
+    public void SetSpeedToCompleteIn(float ticks) {
+        if(max-min==0) {
+            velocity=0f;
+        }
+        else {
+            var speed=(max-min)*60f/ticks;
+            velocity=velocity/(float)Math.Abs(velocity)*speed;
+        }
     }
 
     public abstract float GetCurrent();
@@ -84,6 +98,14 @@ public class Arm : System {
         return $"Arm,{Name},{BaseHingeName},{PistonName},{EndHingeName},{ConnectorName}"; //TODO: the thing
     }
 
+    public IEnumerator<double> MoveXY(float dx, float dy) {
+        //TODO: would be pretty smexy if this were, y'know, general. Even a 
+        // little bit general. For now it is pretty explicitly coded for the
+        // initial hinge-piston-hinge arrangement I'm using at time of 
+        // coding.
+        
+    }
+
     public IEnumerator<double> MoveTo(float baseTarget, float pistonTarget, float endTarget) {
         if(!HasValidBlocks()) {
             program.Echo($"Arm['{Name}']:MoveTo - fail, missing some blocks");
@@ -93,6 +115,11 @@ public class Arm : System {
         BaseHinge.SetTarget(baseTarget*(float)Math.PI/180.0f,0.5f);
         EndHinge.SetTarget(endTarget*(float)Math.PI/180.0f,0.5f);
         Piston.SetTarget(pistonTarget,0.1f);
+        
+        BaseHinge.SetSpeedToCompleteIn(300f);
+        EndHinge.SetSpeedToCompleteIn(300f);
+        Piston.SetSpeedToCompleteIn(300f);
+
         BaseHinge.Apply();
         EndHinge.Apply();
         Piston.Apply();
