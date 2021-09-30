@@ -115,6 +115,7 @@ func main() {
 		}
 		output = append(output, wholefile(section+".cs", *stripComments, *stripBlanks)...)
 		output = append(output, []byte("\n")...)
+		section = strings.ToUpper(section[:1]) + strings.ToLower(section[1:])
 		dict = dict + "\t{\"" + section + "\", Make" + section + "},\n"
 
 	}
