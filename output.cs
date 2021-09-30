@@ -541,14 +541,27 @@ public class Arm : System {
         return $"Arm,{Name},{BaseHingeName},{PistonName},{EndHingeName},{ConnectorName}"; //TODO: the thing
     }
 
-    public IEnumerator<double> MoveToXY(float dx, float dy) {
+    public void CurrentXY(out float X, out float Y) {
+        var dist=7.5+Piston.GetCurrent();
+        var angle=-BaseHinge.GetCurrent();
+        X=(float)(dist*Math.Cos(angle));
+        Y=(float)(dist*Math.Sin(angle));
+    }
+
+    public IEnumerator<double> MoveXY(float dx, float dy) {
+        float X,Y;
+        CurrentXY(out X,out Y);
+        return MoveToXY(X+dx,Y+dy);
+    }
+
+    public IEnumerator<double> MoveToXY(float x, float y) {
         //TODO: would be pretty smexy if this were, y'know, general. Even a 
         // little bit general. For now it is pretty explicitly coded for the
         // initial hinge-piston-hinge arrangement I'm using at time of 
         // coding.
         
         //figure out the target angle for the top hinge to achieve this dx,dy
-        var angle=Math.Atan2(dy,dx);
+        var angle=Math.Atan2(y,x);
 
         if (angle<0 || angle>90) {
             Log("MoveToXY: Angle out of bounds");
@@ -557,14 +570,14 @@ public class Arm : System {
         angle=-angle; 
 
         //figure out the piston extension
-        var dist=Math.Sqrt(dx*dx+dy*dy);
+        var dist=Math.Sqrt(x*x+y*y);
         if (dist<7.5 || dist>17.5) {
             Log("MoveToXY: Distance out of bounds!");
             return null;
         }        
         
 
-        Log($"MoveToXY: {dx},{dy} => {dist}m @ {angle} rads");
+        Log($"MoveToXY: {x},{y} => {dist}m @ {angle} rads");
         
         //change in the base hinge angle - end hinge will move equal opposite
         var angleD=angle-BaseHinge.GetCurrent();
@@ -649,6 +662,27 @@ public class Arm : System {
                 }
                 return MoveToXY((float)argsDouble[0],(float)argsDouble[1]);                
             }
+            case "MoveXY":{
+                if(args.Length!=4) {
+                    Log($"MoveXY called with invalid args - got {args.Length-2}, expected 2");
+                    return null;
+                }
+                double[] argsDouble={0.0,0.0};
+                for (var i=0;i<2;i++) {
+                    if(!Double.TryParse(args[i+2],out argsDouble[i])) {
+                        Log($"MoveXY called with invalid arg {i+1} - expected double");
+                        return null;
+                    }
+                }
+                return MoveXY((float)argsDouble[0],(float)argsDouble[1]);                
+            }
+            case "Check":{
+                float X,Y;
+                CurrentXY(out X,out Y);
+                Log($"Current position: X={X},Y={Y}");
+                return null;
+            }
+            
             default:
                 Log("Wha?");
                 break;
