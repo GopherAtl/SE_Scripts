@@ -215,7 +215,7 @@ public void Main(string argument, UpdateType updateSource) {
             //do the thing
             RunAction(action);
             //TODO: monitor spent cycles, end early and let things 
-            //run late if necessary? Feells unlikely to come up
+            //run late if necessary? Feels unlikely to come up
             //any time soon, but I may do more, and more expensive,
             //systems later...
         }
