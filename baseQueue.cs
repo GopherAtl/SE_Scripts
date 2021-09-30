@@ -6,7 +6,7 @@ public delegate System MakeSystem(Program program, string[] args);
 abstract public class System {
     public string Name;
     public string Type;
-    public Program program;    
+    public Program program;
     public abstract string StorageStr();
     public abstract IEnumerator<double> HandleCommand(string[] args);
     
@@ -55,7 +55,7 @@ public void LoadSystem(string storageStr) {
     Systems.Add(newSys.Name,newSys);
 }
 
-public void QueueAction(TimedAction action) {        
+public void QueueAction(TimedAction action) {
     Echo("QueueAction called");
     if (nextAction==null) { nextAction=action; return; }
     if (nextAction.when > action.when) {
@@ -83,7 +83,7 @@ public Program() {
     string[] systemDefs=Storage.Split('\n');
     switch (systemDefs[0]) {
         case "StorageV1":
-            for (var i=1;i<systemDefs.Length;i++) {                
+            for (var i=1;i<systemDefs.Length;i++) {
                 var str=systemDefs[i];
                 if(str=="") continue;
                 Echo($"def: {str}");
@@ -96,7 +96,7 @@ public Program() {
                     Echo($"Initialization error: Already have a system named '{args[1]}'");
                 } else {
                     Systems.Add(args[1],maker(this,args));
-                }    
+                }
             }
             break;
         default:
@@ -116,10 +116,10 @@ public Program() {
             }
             break;
     }
-    Runtime.UpdateFrequency=UpdateFrequency.None;        
+    Runtime.UpdateFrequency=UpdateFrequency.None;
 }
 
-public void Save() {  
+public void Save() {
     Echo("Save called");
     string[] storageStrs=new string[Systems.Count()+1];
     storageStrs[0]="StorageV1";
@@ -130,12 +130,12 @@ public void Save() {
         Echo(storageStrs[i+1]);
         i++;
     }
-    Storage=String.Join("\n",storageStrs);    
+    Storage=String.Join("\n",storageStrs);
 }
 
 public void RunAction(TimedAction action) {
     action.func.MoveNext();
-      //runTime+TimeSpan.FromSeconds(delay/60)
+    //runTime+TimeSpan.FromSeconds(delay/60)
     if(action.func.Current!=0.0) {
         //if it's not done, queue it up to continue
         action.when+=TimeSpan.FromSeconds(action.func.Current/60);
@@ -152,43 +152,43 @@ public void Main(string argument, UpdateType updateSource) {
         for (var i=0;i<args.Length;i++) {
             args[i]=args[i].Trim();
         }
-        //commands begin with the name of the system being commanded.    
+        //commands begin with the name of the system being commanded.
         System cmdTarget;
         
         if(Systems.TryGetValue(args[0],out cmdTarget)) {
-            var handler=cmdTarget.HandleCommand(args);        
+            var handler=cmdTarget.HandleCommand(args);
             if(handler!=null) {
                 TimedAction newAction=new TimedAction(runTime,handler);
                 RunAction(newAction);
             }
             
         } else {
-            //TODO: maybe some core system commands? Might tie that into the 
-            // regular system tho...        
+            //TODO: maybe some core system commands? Might tie that into the
+            // regular system tho...
             switch(args[0]) {
-                case "save": 
+                case "save":
                 Save();
                 break;
             case "load":
                 Echo(Storage);
                 break;
-            case "types":            
+            case "types":
                 string str="";
                 foreach(string key in SystemTypes.Keys) {
                     str+=key+" ";
                 }
                 Echo(str);
-                break;            
+                break;
             case "add":
                 MakeSystem maker;
                 if(SystemTypes.TryGetValue(args[1],out maker)) {
-                    //restructure args                    
+                    //restructure args
                     var subargs = new string[args.Length-1];
                     for (var i=1;i<args.Length;i++) {
                         subargs[i-1]=args[i];
                     }
                     if(!Systems.ContainsKey(args[2])) {
-                        Systems.Add(args[2],maker(this,subargs));                    
+                        Systems.Add(args[2],maker(this,subargs));
                     } else {
                         Echo($"System named {args[2]} already exists; del it first, or use replace");
                     }
@@ -214,7 +214,7 @@ public void Main(string argument, UpdateType updateSource) {
             nextAction=action.next;
             //do the thing
             RunAction(action);
-            //TODO: monitor spent cycles, end early and let things 
+            //TODO: monitor spent cycles, end early and let things
             //run late if necessary? Feels unlikely to come up
             //any time soon, but I may do more, and more expensive,
             //systems later...
@@ -223,7 +223,7 @@ public void Main(string argument, UpdateType updateSource) {
 
     if (nextAction==null) {
         Echo("No actions remaining!");
-        Runtime.UpdateFrequency=UpdateFrequency.None;        
+        Runtime.UpdateFrequency=UpdateFrequency.None;
     } else {
         if((nextAction.when-runTime).TotalSeconds*60 < 90) {
             Runtime.UpdateFrequency=UpdateFrequency.Update10;
