@@ -208,7 +208,7 @@ public void Main(string argument, UpdateType updateSource) {
             
         }
     } else {
-        while(nextAction!=null && nextAction.when < runTime) {
+        while(nextAction!=null && nextAction.when <= runTime) {
             //pop next action
             var action=nextAction;
             nextAction=action.next;
