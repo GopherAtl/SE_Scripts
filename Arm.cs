@@ -204,56 +204,39 @@ public class Arm : System {
     }
     
 
-    public override IEnumerator<double> HandleCommand(string[] args) {
-        //this check *shouldn't* be needed, we shouldn't be
-        //called until these have been checked, but for sanity
-        if (args[0]!=Name) { 
-            Log($"HandleCommand called with command for {args[0]}");
-            return null;
-        }
-
-        switch(args[1]) {
+    public override IEnumerator<double> HandleCommand(ArgParser args) {        
+        switch(args.function) {
             case "MoveTo": {
-                if(args.Length!=5) {
-                    Log($"MoveTo called with invalid args - got {args.Length-2}, expected 3");
+                args.Expect(3);
+                double h1a=args.NextDouble();
+                double px=args.NextDouble();
+                double h2a=args.NextDouble();
+
+                if(args.error!="") {
+                    Log(args.error);
                     return null;
                 }
-                double[] argsDouble={0.0,0.0,0.0};
-                for (var i=0;i<3;i++) {
-                    if (!Double.TryParse(args[i+2],out argsDouble[i])) {
-                        Log($"MoveTo called with invalid arg {i+1} - expected double");
-                        return null;
-                    }                    
-                }
-                return MoveTo((float)argsDouble[0]*(float)Math.PI/180.0f,(float)argsDouble[1],(float)argsDouble[2]*(float)Math.PI/180.0f);
+                return MoveTo((float)h1a*(float)Math.PI/180.0f,(float)px,(float)h2a*(float)Math.PI/180.0f);
             }
             case "MoveToXY": {
-                if(args.Length!=4) {
-                    Log($"MoveToXY called with invalid args - got {args.Length-2}, expected 2");
-                    return null;                    
-                }
-                double[] argsDouble={0.0,0.0};
-                for (var i=0;i<2;i++) {
-                    if(!Double.TryParse(args[i+2],out argsDouble[i])) {
-                        Log($"MoveToXY called with invalid arg {i+1} - expected double");
-                        return null;
-                    }
-                }
-                return MoveToXY((float)argsDouble[0],(float)argsDouble[1]);                
-            }
-            case "MoveXY":{
-                if(args.Length!=4) {
-                    Log($"MoveXY called with invalid args - got {args.Length-2}, expected 2");
+                args.Expect(2);
+                var x=(float)args.NextDouble();
+                var y=(float)args.NextDouble();
+                if(args.error!="") {
+                    Log(args.error);
                     return null;
                 }
-                double[] argsDouble={0.0,0.0};
-                for (var i=0;i<2;i++) {
-                    if(!Double.TryParse(args[i+2],out argsDouble[i])) {
-                        Log($"MoveXY called with invalid arg {i+1} - expected double");
-                        return null;
-                    }
+                return MoveToXY(x,y);
+            }
+            case "MoveXY":{
+                args.Expect(2);
+                var x=(float)args.NextDouble();
+                var y=(float)args.NextDouble();
+                if(args.error!="") {
+                    Log(args.error);
+                    return null;
                 }
-                return MoveXY((float)argsDouble[0],(float)argsDouble[1]);                
+                return MoveXY(x,y);                
             }
             case "Check":{
                 float X,Y;

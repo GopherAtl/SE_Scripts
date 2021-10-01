@@ -8,7 +8,7 @@ abstract public class System {
     public string Type;
     public Program program;
     public abstract string StorageStr();
-    public abstract IEnumerator<double> HandleCommand(string[] args);
+    public abstract IEnumerator<double> HandleCommand(ArgParser args);
     
     public System(Program program, string name, string type) {
         Name=name;
@@ -72,11 +72,61 @@ public void QueueAction(TimedAction action) {
     
 }
 
+public class ArgParser {
+    public string function;
+    public string system;
+    int nextIndex;
+
+    string[] args;
+
+    public string error;
+    string baseError;
+
+    public void Prep(string[] args) {
+        this.args=args;
+        system=args[0];
+        function=args[1];
+        nextIndex=2;
+        error="";
+        baseError=$"{system}::{function}: ";
+    }
+    public void Expect(int n) {
+        if(n!=args.Length-2) {
+            error=$"Expected {n} args, got {args.Length-2}!";
+        }
+    }
+
+    //$"{Type}['{Name}']:{message}");
+    public string NextString() {
+        if(error!="" || nextIndex==args.Length) {
+            error=baseError+"not enough arguments";
+            return "";
+        } else {
+            return args[nextIndex++];
+        }
+    }   
+    public double NextDouble() {
+        double dbl=0;
+        if(error!="") {}
+        else if(nextIndex==args.Length) {
+            error=baseError+"not enough arguments";
+        }
+        else if (!Double.TryParse(args[nextIndex++],out dbl)) {  
+            error=baseError+$"arg #{nextIndex-1}: expected double, got '{args[nextIndex]}'!";
+        }
+        return dbl;
+    }
+
+}
+
+ArgParser parser;
+
 public Program() {
     runTime=Runtime.TimeSinceLastRun;
     screen = Me.GetSurface(1);
     screen.ContentType=ContentType.TEXT_AND_IMAGE;
     screen.FontSize=3.0F;
+    parser=new ArgParser();
 
     //load
 
@@ -147,16 +197,18 @@ public void Main(string argument, UpdateType updateSource) {
     runTime += Runtime.TimeSinceLastRun;
     screen.WriteText($"{runTime}\n",false);
   
-    if(updateSource==UpdateType.Trigger || updateSource==UpdateType.Terminal) {
+    if((updateSource & (UpdateType.Trigger | UpdateType.Terminal))!=0) {
         string[] args=argument.Split(',');
         for (var i=0;i<args.Length;i++) {
             args[i]=args[i].Trim();
         }
+        
+        parser.Prep(args);
         //commands begin with the name of the system being commanded.
         System cmdTarget;
         
-        if(Systems.TryGetValue(args[0],out cmdTarget)) {
-            var handler=cmdTarget.HandleCommand(args);
+        if(Systems.TryGetValue(parser.system,out cmdTarget)) {
+            var handler=cmdTarget.HandleCommand(parser);
             if(handler!=null) {
                 TimedAction newAction=new TimedAction(runTime,handler);
                 RunAction(newAction);
