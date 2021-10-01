@@ -85,7 +85,7 @@ public class ArgParser {
     public void Prep(string[] args) {
         this.args=args;
         system=args[0];
-        function=args[1];
+        function=args.Length>1?args[1]:"";
         nextIndex=2;
         error="";
         baseError=$"{system}::{function}: ";

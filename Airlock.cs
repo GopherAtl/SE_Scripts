@@ -85,12 +85,8 @@ public class Airlock : System {
         }
     }
 
-    public override IEnumerator<double> HandleCommand(string[] args) {
-        if(args.Length>2) {
-            program.Echo("Too many arguments in call to airlock");
-            return null;            
-        }
-
+    public override IEnumerator<double> HandleCommand(ArgParser args) {
+        
         if(state==AirlockState.Invalid) {
             //TODO: attempt again to validate maybe? Would require me to 
             // have the Airlock itself remember the *names* of it's 
@@ -103,9 +99,7 @@ public class Airlock : System {
             return null;
         }
 
-        var cmd=args.Length==2 ? args[1] : "";
-
-        switch (cmd) {
+        switch (args.function) {
         case "pressurize":
             return PressurizeAirlock();
         case "depressurize":

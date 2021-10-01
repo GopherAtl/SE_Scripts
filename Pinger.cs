@@ -18,14 +18,8 @@ public class Pinger : System {
         yield return 0;        
     }
 
-    public override IEnumerator<double> HandleCommand(string[] args) {
-        //this check *shouldn't* be needed, we shouldn't be
-        //called until these have been checked, but for sanity
-        if (args[0]!=Name) { 
-            program.Echo($"pinger['{Name}']:HandleCommand called with command for {args[0]}[{args[1]}]");
-            return null;
-        }
-
+    public override IEnumerator<double> HandleCommand(ArgParser args) {
+        
         return DoPing();
     }
 }
