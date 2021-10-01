@@ -1,1 +1,21 @@
-todo: populate todo list.
+baseQueue:
+	use linkedlist<> - dunno why I rolled my own in the first place?
+	display something useful instead of just the tick counter?
+	config - current dynamic command system is... fine... but the ability to define controls
+		in customdata - ini format? - would be nice, and possibly more robust?
+
+Arm:
+	allow movement commands to queue? Or at *least* interrupt, current behavior of is bad
+	MoveX and MoveY? Moderate convenience but more code.
+	Generalize/improve command arg handling? Lots of repetitive boilerplate code there, 
+		would be applicable to all systems not just Arm
+	preset panel buttons - A, B, C, and set, 3 preset buttons, press to go to positions,
+		press set first then A,B,or C to save current to buttons.
+
+
+systems:
+	inventory manager
+	solar panel controls
+	general atmos control - detecting loss of pressure and sealing doors/sections, etc. Should this be a thing that runs parallel to airlocks? Or something that replaces it and takes over that functionality? The relevant edge case is embodied by the ship hangar, where there are multiple entrances to sections which would be managed by the general system.
+		
+

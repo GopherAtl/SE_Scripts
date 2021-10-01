@@ -77,7 +77,7 @@ public Program() {
     screen = Me.GetSurface(1);
     screen.ContentType=ContentType.TEXT_AND_IMAGE;
     screen.FontSize=3.0F;
-    
+
     //load
 
     string[] systemDefs=Storage.Split('\n');
@@ -135,7 +135,7 @@ public void Save() {
 
 public void RunAction(TimedAction action) {
     action.func.MoveNext();
-    //runTime+TimeSpan.FromSeconds(delay/60)
+
     if(action.func.Current!=0.0) {
         //if it's not done, queue it up to continue
         action.when+=TimeSpan.FromSeconds(action.func.Current/60);
