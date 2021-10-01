@@ -5,6 +5,7 @@ baseQueue:
 		current dynamic command system is... fine... but the ability to define controls in customdata - ini format? - would be nice, and possibly more robust?
 
 Arm:
+	- impose -90 to 90 constraint on hinges, since the api seems to do not-that....
 	- allow movement commands to queue? Or at *least* interrupt, current behavior is bad 
 	- MoveX and MoveY? Moderate convenience but more code.
 	- Generalize/improve command arg handling? Lots of repetitive boilerplate code there,  would be applicable to all systems not just Arm preset panel buttons - A, B, C, and set, 3 preset buttons, press to go to positions,	press set first then A,B,or C to save current to buttons.
@@ -20,4 +21,3 @@ systems:
 	general atmos control 
 		detecting loss of pressure and sealing doors/sections, etc. Should this be a thing that runs parallel to airlocks? Or something that replaces it and takes over that functionality? The relevant edge case is embodied by the ship hangar, where there are multiple entrances to sections which would be managed by the general system.
 		
-
