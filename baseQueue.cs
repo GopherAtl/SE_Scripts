@@ -9,7 +9,7 @@ abstract public class System {
     public Program program;
     public abstract string StorageStr();
     public abstract IEnumerator<double> HandleCommand(ArgParser args);
-    
+
     public System(Program program, string name, string type) {
         Name=name;
         Type=type;
@@ -25,7 +25,7 @@ abstract public class System {
 public class TimedAction {
     public TimeSpan when;
     public IEnumerator<Double> func;
-  
+
     public TimedAction next;
 
     public TimedAction(TimeSpan w, IEnumerator<Double> f) {
@@ -69,7 +69,7 @@ public void QueueAction(TimedAction action) {
     }
     action.next=after.next;
     after.next=action;
-    
+
 }
 
 public class ArgParser {
@@ -104,14 +104,14 @@ public class ArgParser {
         } else {
             return args[nextIndex++];
         }
-    }   
+    }
     public double NextDouble() {
         double dbl=0;
         if(error!="") {}
         else if(nextIndex==args.Length) {
             error=baseError+"not enough arguments";
         }
-        else if (!Double.TryParse(args[nextIndex++],out dbl)) {  
+        else if (!Double.TryParse(args[nextIndex++],out dbl)) {
             error=baseError+$"arg #{nextIndex-1}: expected double, got '{args[nextIndex]}'!";
         }
         return dbl;
@@ -174,7 +174,7 @@ public void Save() {
     string[] storageStrs=new string[Systems.Count()+1];
     storageStrs[0]="StorageV1";
     int i=0;
-    
+
     foreach (System sys in Systems.Values) {
         storageStrs[i+1]=sys.StorageStr();
         Echo(storageStrs[i+1]);
@@ -196,24 +196,24 @@ public void RunAction(TimedAction action) {
 public void Main(string argument, UpdateType updateSource) {
     runTime += Runtime.TimeSinceLastRun;
     screen.WriteText($"{runTime}\n",false);
-  
+
     if((updateSource & (UpdateType.Trigger | UpdateType.Terminal))!=0) {
         string[] args=argument.Split(',');
         for (var i=0;i<args.Length;i++) {
             args[i]=args[i].Trim();
         }
-        
+
         parser.Prep(args);
         //commands begin with the name of the system being commanded.
         System cmdTarget;
-        
+
         if(Systems.TryGetValue(parser.system,out cmdTarget)) {
             var handler=cmdTarget.HandleCommand(parser);
             if(handler!=null) {
                 TimedAction newAction=new TimedAction(runTime,handler);
                 RunAction(newAction);
             }
-            
+
         } else {
             //TODO: maybe some core system commands? Might tie that into the
             // regular system tho...
@@ -257,7 +257,7 @@ public void Main(string argument, UpdateType updateSource) {
                 }
                 break;
             }
-            
+
         }
     } else {
         while(nextAction!=null && nextAction.when <= runTime) {

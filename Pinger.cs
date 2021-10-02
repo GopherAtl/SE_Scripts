@@ -3,7 +3,7 @@ namespace SEScripts {
 class PingerSystem {
 public class Pinger : System {
 
-    public Pinger(Program program, string name)  
+    public Pinger(Program program, string name)
         : base(program, name, "Pinger") { }
 
 
@@ -15,11 +15,11 @@ public class Pinger : System {
         program.screen.WriteText("Ping!",true);
         yield return 300;
         program.screen.WriteText("Pong!",true);
-        yield return 0;        
+        yield return 0;
     }
 
     public override IEnumerator<double> HandleCommand(ArgParser args) {
-        
+
         return DoPing();
     }
 }

@@ -103,8 +103,8 @@ public class Arm : System {
     PistonControl Piston;
     IMyShipConnector Connector;
 
-    public Arm(Program program, string name, string baseHingeName, string pistonName, string endHingeName, string connectorName) 
-        : base(program, name, "Arm") { 
+    public Arm(Program program, string name, string baseHingeName, string pistonName, string endHingeName, string connectorName)
+        : base(program, name, "Arm") {
             BaseHingeName=baseHingeName;
             PistonName=pistonName;
             EndHingeName=endHingeName;
@@ -115,7 +115,7 @@ public class Arm : System {
             GetBlocks();
         }
 
-    
+
     public override string StorageStr() {
         return $"Arm,{Name},{BaseHingeName},{PistonName},{EndHingeName},{ConnectorName}"; //TODO: the thing
     }
@@ -134,11 +134,11 @@ public class Arm : System {
     }
 
     public IEnumerator<double> MoveToXY(float x, float y) {
-        //TODO: would be pretty smexy if this were, y'know, general. Even a 
+        //TODO: would be pretty smexy if this were, y'know, general. Even a
         // little bit general. For now it is pretty explicitly coded for the
-        // initial hinge-piston-hinge arrangement I'm using at time of 
+        // initial hinge-piston-hinge arrangement I'm using at time of
         // coding.
-        
+
         //figure out the target angle for the top hinge to achieve this dx,dy
         var angle=Math.Atan2(y,x);
 
@@ -146,21 +146,21 @@ public class Arm : System {
             Log("MoveToXY: Angle out of bounds");
             return null;
         }
-        angle=-angle; 
+        angle=-angle;
 
         //figure out the piston extension
         var dist=Math.Sqrt(x*x+y*y);
         if (dist<7.5 || dist>17.5) {
             Log("MoveToXY: Distance out of bounds!");
             return null;
-        }        
-        
+        }
+
 
         Log($"MoveToXY: {x},{y} => {dist}m @ {angle} rads");
-        
+
         //change in the base hinge angle - end hinge will move equal opposite
         var angleD=angle-BaseHinge.GetCurrent();
-        
+
         return MoveTo((float)angle,(float)dist-7.5f,(float)(EndHinge.GetCurrent()-angleD));
     }
 
@@ -169,11 +169,11 @@ public class Arm : System {
             Log("MoveTo - fail, missing some blocks");
             yield return 0.0;
         }
-        
+
         BaseHinge.SetTarget(baseTarget,0.5f);
         EndHinge.SetTarget(endTarget,0.5f);
         Piston.SetTarget(pistonTarget,0.1f);
-        
+
         BaseHinge.SetSpeedToCompleteIn(300f);
         EndHinge.SetSpeedToCompleteIn(300f);
         Piston.SetSpeedToCompleteIn(300f);
@@ -181,8 +181,8 @@ public class Arm : System {
         BaseHinge.Apply();
         EndHinge.Apply();
         Piston.Apply();
-        
-        
+
+
         double ticks=300;
         double timeLimit=ticks*2;
         while(ticks>1) {
@@ -194,7 +194,7 @@ public class Arm : System {
             }
             ticks=Math.Max(Math.Max(BaseHinge.TicksToComplete(),EndHinge.TicksToComplete()),Piston.TicksToComplete());
             Log($"MoveTo yielding for {ticks} more ticks");
-        } 
+        }
 
         BaseHinge.Stop();
         EndHinge.Stop();
@@ -202,9 +202,9 @@ public class Arm : System {
         Log("MoveTo stopping");
         yield return 0;
     }
-    
 
-    public override IEnumerator<double> HandleCommand(ArgParser args) {        
+
+    public override IEnumerator<double> HandleCommand(ArgParser args) {
         switch(args.function) {
             case "MoveTo": {
                 args.Expect(3);
@@ -236,7 +236,7 @@ public class Arm : System {
                     Log(args.error);
                     return null;
                 }
-                return MoveXY(x,y);                
+                return MoveXY(x,y);
             }
             case "Check":{
                 float X,Y;
@@ -244,7 +244,7 @@ public class Arm : System {
                 Log($"Current position: X={X},Y={Y}");
                 return null;
             }
-            
+
             default:
                 Log("Wha?");
                 break;
@@ -265,7 +265,7 @@ public class Arm : System {
     public bool GetBlocks() {
         BaseHinge.Hinge=program.GridTerminalSystem.GetBlockWithName(BaseHingeName) as IMyMotorAdvancedStator;
         Piston.Piston=program.GridTerminalSystem.GetBlockWithName(PistonName) as IMyExtendedPistonBase;
-        EndHinge.Hinge=program.GridTerminalSystem.GetBlockWithName(EndHingeName) as IMyMotorAdvancedStator;   
+        EndHinge.Hinge=program.GridTerminalSystem.GetBlockWithName(EndHingeName) as IMyMotorAdvancedStator;
         Connector = program.GridTerminalSystem.GetBlockWithName(ConnectorName) as IMyShipConnector;
         return HasValidBlocks();
     }
@@ -276,7 +276,7 @@ public static System MakeArm(Program program, string[] args) {
         program.Echo($"MakeArm given {args.Length} args!");
         return null;
     }
-   
+
     return new Arm(program, args[1],args[2],args[3],args[4],args[5]);
 }
 
