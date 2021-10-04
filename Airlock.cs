@@ -8,70 +8,102 @@ public enum AirlockState {
     Cycling
 }
 
+
 public class Airlock : System {
+    string innerDoorName, outerDoorName, ventName;
     IMyAirVent vent;
-    IMyDoor innerDoor, outerDoor;
+    List<IMyDoor> innerDoors, outerDoors;
     AirlockState state;
 
-    public Airlock(Program program, string name, string ventName, string innerDoorName, string outerDoorName) 
+    public Airlock(Program program, string name, string ventName, string innerDoorName, string outerDoorName)
         : base(program, name, "Airlock") {
+        this.innerDoorName=innerDoorName;
+        this.outerDoorName=outerDoorName;
+        this.ventName=ventName;
 
         vent = program.GridTerminalSystem.GetBlockWithName(ventName) as IMyAirVent;
-        innerDoor = program.GridTerminalSystem.GetBlockWithName(innerDoorName) as IMyDoor;
-        outerDoor = program.GridTerminalSystem.GetBlockWithName(outerDoorName) as IMyDoor;
+        innerDoors=new List<IMyDoor>();
+        outerDoors=new List<IMyDoor>();
+        GetBlocks<IMyDoor>(innerDoorName,innerDoors);
+        GetBlocks<IMyDoor>(outerDoorName,outerDoors);
         program.Echo($"airlock {name} {ventName} {innerDoorName} {outerDoorName}");
-        if (vent==null || innerDoor==null || outerDoor==null) {
+        if (vent==null || innerDoors.Count==0 || outerDoors.Count==0) {
             program.Echo("Fail.");
             state=AirlockState.Invalid;
         } else {
             switch(vent.Status) {
-                case VentStatus.Pressurizing:                    
-                case VentStatus.Pressurized:                    
-                    innerDoor.Enabled=true;
-                    outerDoor.Enabled=false;
+                case VentStatus.Pressurizing:
+                case VentStatus.Pressurized:
+                    foreach (var door in innerDoors) door.Enabled=true;
+                    foreach (var door in outerDoors) door.Enabled=false;
                     state=AirlockState.Pressurized;
-
                     break;
                 case VentStatus.Depressurizing:
                 case VentStatus.Depressurized:
-                    innerDoor.Enabled=false;
-                    outerDoor.Enabled=true;
+                    foreach (var door in innerDoors) door.Enabled=false;
+                    foreach (var door in outerDoors) door.Enabled=true;
                     state=AirlockState.Depressurized;
                     break;
             }
         }
-        
+
+    }
+
+    public void GetBlocks<T>(string name,List<T> list) where T: class, IMyTerminalBlock  {
+
+        var g=program.GridTerminalSystem.GetBlockGroupWithName(name);
+        if(g!=null) {
+            g.GetBlocksOfType(list);
+        } else {
+            //no group, blocks
+            program.GridTerminalSystem.GetBlocksOfType(list, block=>block.CustomName==name);
+        }
     }
 
     public IEnumerator<double> PressurizeAirlock() {
         state=AirlockState.Cycling;
-        while(outerDoor.Status!=DoorStatus.Closed) {
-        outerDoor.Enabled=true;
-        outerDoor.CloseDoor();
+
+        while(true) {
+            var closed=true;
+            foreach(var door in outerDoors) closed=closed&&(door.Status==DoorStatus.Closed);
+            if(closed) break;
+            foreach(var door in outerDoors) {
+                door.Enabled=true;
+                door.CloseDoor();
+            }
             yield return 10;
         }
-        outerDoor.Enabled=false;
+        foreach (var door in outerDoors) door.Enabled=false;
 
         vent.Depressurize=false;
-        innerDoor.Enabled=true;
-        innerDoor.OpenDoor();        
+        foreach (var door in innerDoors) {
+            door.Enabled=true;
+            door.OpenDoor();
+        }
         state=AirlockState.Pressurized;
         yield return 0;
     }
 
     public IEnumerator<double> DepressurizeAirlock() {
         state=AirlockState.Cycling;
-        while(innerDoor.Status!=DoorStatus.Closed) {
-            innerDoor.Enabled=true;
-            innerDoor.CloseDoor();
-                yield return 10;
+        while(true) {
+            var closed=true;
+            foreach (var door in innerDoors) closed=closed&&(door.Status==DoorStatus.Closed);
+            if(closed) break;
+            foreach (var door in innerDoors) {
+                door.Enabled=true;
+                door.CloseDoor();
+            }
+            yield return 10;
         }
-        innerDoor.Enabled=false;
+        foreach(var door in innerDoors) door.Enabled=false;
         vent.Depressurize=true;
         //give it time to pull the air out
         yield return 120;
-        outerDoor.Enabled=true;
-        outerDoor.OpenDoor();
+        foreach(var door in outerDoors) {
+            door.Enabled=true;
+            door.OpenDoor();
+        }
         state=AirlockState.Depressurized;
         yield return 0;
     }
@@ -81,19 +113,19 @@ public class Airlock : System {
             program.Echo("Airlock is invalid, saving empty string");
             return "";
         } else {
-            return String.Join(",","Airlock",Name,vent.CustomName,innerDoor.CustomName,outerDoor.CustomName);
+            return String.Join(",","Airlock",Name,ventName,innerDoorName,outerDoorName);
         }
     }
 
     public override IEnumerator<double> HandleCommand(ArgParser args) {
-        
+
         if(state==AirlockState.Invalid) {
-            //TODO: attempt again to validate maybe? Would require me to 
-            // have the Airlock itself remember the *names* of it's 
+            //TODO: attempt again to validate maybe? Would require me to
+            // have the Airlock itself remember the *names* of it's
             // blocks
             return null;
         }
-        
+
         if(state==AirlockState.Cycling) {
             //gotta wait for now. TODO maybe allow override/reverse?
             return null;
@@ -109,7 +141,7 @@ public class Airlock : System {
                 return PressurizeAirlock();
             } else if(state==AirlockState.Pressurized) {
                 return DepressurizeAirlock();
-            }  
+            }
             return null;
         }
     }
