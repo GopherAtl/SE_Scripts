@@ -7,10 +7,6 @@ public class Pinger : System {
         : base(program, name, "Pinger") { }
 
 
-    public override string StorageStr() {
-        return $"pinger,{Name}";
-    }
-
     public IEnumerator<double> DoPing() {
         program.screen.WriteText("Ping!",true);
         yield return 300;

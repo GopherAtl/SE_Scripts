@@ -7,7 +7,6 @@ abstract public class System {
     public string Name;
     public string Type;
     public Program program;
-    public abstract string StorageStr();
     public abstract IEnumerator<double> HandleCommand(ArgParser args);
 
     public System(Program program, string name, string type) {
@@ -138,17 +137,6 @@ public Program() {
 }
 
 public void Save() {
-    Echo("Save called");
-    string[] storageStrs=new string[Systems.Count()+1];
-    storageStrs[0]="StorageV1";
-    int i=0;
-
-    foreach (System sys in Systems.Values) {
-        storageStrs[i+1]=sys.StorageStr();
-        Echo(storageStrs[i+1]);
-        i++;
-    }
-    Storage=String.Join("\n",storageStrs);
 }
 
 public void RunAction(TimedAction action) {

@@ -120,15 +120,6 @@ public class Airlock : System {
         yield return 0;
     }
 
-    public override string StorageStr() {
-        if(state==AirlockState.Invalid) {
-            program.Echo("Airlock is invalid, saving empty string");
-            return "";
-        } else {
-            return String.Join(",","Airlock",Name,ventName,innerDoorName,outerDoorName);
-        }
-    }
-
     public override IEnumerator<double> HandleCommand(ArgParser args) {
 
         if(state==AirlockState.Invalid) {

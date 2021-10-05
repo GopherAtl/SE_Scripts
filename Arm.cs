@@ -116,10 +116,6 @@ public class Arm : System {
         }
 
 
-    public override string StorageStr() {
-        return $"Arm,{Name},{BaseHingeName},{PistonName},{EndHingeName},{ConnectorName}"; //TODO: the thing
-    }
-
     public void CurrentXY(out float X, out float Y) {
         var dist=7.5+Piston.GetCurrent();
         var angle=-BaseHinge.GetCurrent();
