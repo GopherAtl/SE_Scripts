@@ -11,7 +11,7 @@ public enum AirlockState {
 
 public class Airlock : System {
     string innerDoorName, outerDoorName, ventName;
-    IMyAirVent vent;
+    List<IMyAirVent> vents;
     List<IMyDoor> innerDoors, outerDoors;
     AirlockState state;
 
@@ -21,17 +21,18 @@ public class Airlock : System {
         this.outerDoorName=outerDoorName;
         this.ventName=ventName;
 
-        vent = program.GridTerminalSystem.GetBlockWithName(ventName) as IMyAirVent;
+        vents = new List<IMyAirVent>();
         innerDoors=new List<IMyDoor>();
         outerDoors=new List<IMyDoor>();
         GetBlocks<IMyDoor>(innerDoorName,innerDoors);
         GetBlocks<IMyDoor>(outerDoorName,outerDoors);
-        program.Echo($"airlock {name} {ventName} {innerDoorName} {outerDoorName}");
-        if (vent==null || innerDoors.Count==0 || outerDoors.Count==0) {
+        GetBlocks<IMyAirVent>(ventName,vents);
+
+        if (vents.Count==0 || innerDoors.Count==0 || outerDoors.Count==0) {
             program.Echo("Fail.");
             state=AirlockState.Invalid;
         } else {
-            switch(vent.Status) {
+            switch(vents[0].Status) {
                 case VentStatus.Pressurizing:
                 case VentStatus.Pressurized:
                     foreach (var door in innerDoors) door.Enabled=true;
@@ -75,7 +76,7 @@ public class Airlock : System {
         }
         foreach (var door in outerDoors) door.Enabled=false;
 
-        vent.Depressurize=false;
+        foreach(var vent in vents) vent.Depressurize=false;
         foreach (var door in innerDoors) {
             door.Enabled=true;
             door.OpenDoor();
@@ -97,9 +98,20 @@ public class Airlock : System {
             yield return 10;
         }
         foreach(var door in innerDoors) door.Enabled=false;
-        vent.Depressurize=true;
+        foreach(var vent in vents) vent.Depressurize=true;
         //give it time to pull the air out
-        yield return 120;
+        //it'll take at least some time regardless
+        yield return 60;
+        while(true) {
+            var maxo2=0f;
+            foreach(var vent in vents) {
+                var o2=vent.GetOxygenLevel();
+                maxo2=maxo2>o2?maxo2:o2;
+            }
+            if(maxo2<=0.04) break;
+            yield return 10;
+        }
+
         foreach(var door in outerDoors) {
             door.Enabled=true;
             door.OpenDoor();
