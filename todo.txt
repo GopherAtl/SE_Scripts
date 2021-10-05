@@ -5,8 +5,6 @@ Airlock:
 baseQueue:
 	use linkedlist<> - dunno why I rolled my own in the first place?
 	display something useful instead of just the tick counter?
-	config
-		current dynamic command system is... fine... but the ability to define controls in customdata - ini format? - would be nice, and possibly more robust?
 
 Arm:
 	- impose -90 to 90 constraint on hinges, since the api seems to do not-that....
