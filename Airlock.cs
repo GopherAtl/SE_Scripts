@@ -147,12 +147,13 @@ public class Airlock : System {
     }
 }
 
-public static System MakeAirlock(Program program, string[] args) {
-    if(args.Length!=5) {
-        program.Echo($"Error: MakeAirlock given {args.Length} args!");
-        return null;
-    }
-    return new Airlock(program, args[1],args[2],args[3],args[4]);
+public static System MakeAirlock(Program program, string name,MyIni ini) {
+    
+    var vent=ini.Get(name,"vent");
+    var innerDoor=ini.Get(name,"innerDoors");
+    var outerDoor=ini.Get(name,"outerDoors");
+    
+    return new Airlock(program, name,vent.ToString(),innerDoor.ToString(),outerDoor.ToString());
 }
 
 // add airlock Airlock_Dock Airlock_Dock_Vent Airlock_Dock_Inner_Door Airlock_Dock_Outer_Door

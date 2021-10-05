@@ -24,12 +24,8 @@ public class Pinger : System {
     }
 }
 
-public static System MakePinger(Program program, string[] args) {
-    if(args.Length!=2) {
-        program.Echo($"Error: MakePinger given {args.Length} args!");
-        return null;
-    }
-    return new Pinger(program, args[1]);
+public static System MakePinger(Program program, string name, MyIni ini) {
+    return new Pinger(program, name);
 }
 }
 }

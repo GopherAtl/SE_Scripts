@@ -1,7 +1,7 @@
 namespace SEScripts {
 
 class Scheduler {
-public delegate System MakeSystem(Program program, string[] args);
+public delegate System SystemMaker(Program program, string name, MyIni ini);
 
 abstract public class System {
     public string Name;
@@ -42,18 +42,6 @@ public IMyTextSurface screen;
 public Dictionary<string,System> Systems=new Dictionary<string,System>();
 
 public TimedAction nextAction;
-
-public void LoadSystem(string storageStr) {
-    string[]args = storageStr.Split();
-    MakeSystem maker;
-    SystemTypes.TryGetValue(args[0], out maker);
-    if(maker==null) {
-        Echo($"Tried to load unknown system type \"{args[0]}\"");
-        return;
-    }
-    System newSys=maker(this, args);
-    Systems.Add(newSys.Name,newSys);
-}
 
 public void QueueAction(TimedAction action) {
     Echo("QueueAction called");
@@ -128,44 +116,24 @@ public Program() {
     screen.FontSize=3.0F;
     parser=new ArgParser();
 
-    //load
-
-    string[] systemDefs=Storage.Split('\n');
-    switch (systemDefs[0]) {
-        case "StorageV1":
-            for (var i=1;i<systemDefs.Length;i++) {
-                var str=systemDefs[i];
-                if(str=="") continue;
-                Echo($"def: {str}");
-                string[] args=str.Split(',');
-                MakeSystem maker;
-                System chode;
-                if (!SystemTypes.TryGetValue(args[0],out maker)) {
-                    Echo($"Initialization error: unknown system type '{args[0]}'");
-                } else if(Systems.TryGetValue(args[1], out chode)) {
-                    Echo($"Initialization error: Already have a system named '{args[1]}'");
-                } else {
-                    Systems.Add(args[1],maker(this,args));
-                }
+    var ini=new MyIni();
+    MyIniParseResult iniResult;
+    if (!ini.TryParse(Me.CustomData,out iniResult)) {
+        Echo($"Ini error: {iniResult}");
+    } else {
+        var systemNames=new List<string>();
+        ini.GetSections(systemNames);
+        foreach (var sysName in systemNames) {
+            var type=ini.Get(sysName,"type");
+            SystemMaker maker;
+            if (type.IsEmpty || !SystemTypes.TryGetValue(type.ToString(),out maker)) {
+                Echo($"Ini error: missing or invalid type in system {sysName}!");
+                continue;
             }
-            break;
-        default:
-            foreach (string str in systemDefs) {
-                if(str=="") continue;
-                string[] args=str.Split(' ');
-                Echo($"def: {str}");
-                MakeSystem maker;
-                System chode;
-                if (!SystemTypes.TryGetValue(args[0],out maker)) {
-                    Echo($"Initialization error: unknown system type '{args[0]}'");
-                } else if(Systems.TryGetValue(args[1], out chode)) {
-                    Echo($"Initialization error: Already have a system named '{args[1]}'");
-                } else {
-                    Systems.Add(args[1],maker(this,args));
-                }
-            }
-            break;
+            Systems.Add(sysName,maker(this,sysName,ini));
+        }
     }
+
     Runtime.UpdateFrequency=UpdateFrequency.None;
 }
 
@@ -213,51 +181,26 @@ public void Main(string argument, UpdateType updateSource) {
                 TimedAction newAction=new TimedAction(runTime,handler);
                 RunAction(newAction);
             }
-
         } else {
-            //TODO: maybe some core system commands? Might tie that into the
-            // regular system tho...
+            //core system commands
             switch(args[0]) {
-                case "save":
-                Save();
-                break;
-            case "load":
-                Echo(Storage);
-                break;
-            case "types":
-                string str="";
-                foreach(string key in SystemTypes.Keys) {
-                    str+=key+" ";
-                }
-                Echo(str);
-                break;
-            case "add":
-                MakeSystem maker;
-                if(SystemTypes.TryGetValue(args[1],out maker)) {
-                    //restructure args
-                    var subargs = new string[args.Length-1];
-                    for (var i=1;i<args.Length;i++) {
-                        subargs[i-1]=args[i];
+                case "types": {
+                    string str="";
+                    foreach(string key in SystemTypes.Keys) {
+                        str+=key+" ";
                     }
-                    if(!Systems.ContainsKey(args[2])) {
-                        Systems.Add(args[2],maker(this,subargs));
-                    } else {
-                        Echo($"System named {args[2]} already exists; del it first, or use replace");
-                    }
-                } else {
-                    Echo($"Attempt to add unknown system type '{args[1]}'");
+                    Echo(str);
+                    break;
                 }
-                break;
-            case "del":
-                System sys;
-                if(Systems.TryGetValue(args[1],out sys)) {
-                    Systems.Remove(args[1]);
-                } else {
-                    Echo($"Attempt to delete unknown system '{args[1]}'");
+                case "systems": {
+                    string str="";
+                    foreach(var system in Systems.Values) {
+                        str+=$"{system.Name}({system.Type})\n";
+                    }   
+                    Echo(str);
+                    break;
                 }
-                break;
             }
-
         }
     } else {
         while(nextAction!=null && nextAction.when <= runTime) {

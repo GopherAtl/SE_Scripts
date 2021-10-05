@@ -271,13 +271,14 @@ public class Arm : System {
     }
 }
 
-public static System MakeArm(Program program, string[] args) {
-    if(args.Length!=6) {
-        program.Echo($"MakeArm given {args.Length} args!");
-        return null;
-    }
+public static System MakeArm(Program program, string name, MyIni ini) {
+    
+    var baseHinge=ini.Get(name,"BaseHinge");
+    var endHinge=ini.Get(name,"EndHinge");
+    var piston=ini.Get(name,"Piston");
+    var connector=ini.Get(name,"Connector");
 
-    return new Arm(program, args[1],args[2],args[3],args[4],args[5]);
+    return new Arm(program, name,baseHinge.ToString(),piston.ToString(),endHinge.ToString(),connector.ToString());
 }
 
 }

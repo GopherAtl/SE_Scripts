@@ -107,7 +107,7 @@ func main() {
 
 	output = append(output, wholefile("baseQueue.cs", *stripComments, *stripBlanks)...)
 	output = append(output, []byte("\n")...)
-	dict := "public Dictionary<string,MakeSystem> SystemTypes=new Dictionary<string,MakeSystem>{\n"
+	dict := "public Dictionary<string,SystemMaker> SystemTypes=new Dictionary<string,SystemMaker>{\n"
 
 	for _, section := range sections {
 		if *headers {
